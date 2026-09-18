@@ -80,7 +80,9 @@ export default function ProductsPage() {
     loadData();
   }, []);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
     setMessage("");
@@ -107,7 +109,9 @@ export default function ProductsPage() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        setMessage(data.message || "Unable to create product.");
+        setMessage(
+          data.message || "Unable to create product.",
+        );
         return;
       }
 
@@ -139,8 +143,12 @@ export default function ProductsPage() {
 
     return products.filter((product) => {
       return (
-        product.productCode.toLowerCase().includes(keyword) ||
-        product.name.toLowerCase().includes(keyword) ||
+        product.productCode
+          .toLowerCase()
+          .includes(keyword) ||
+        product.name
+          .toLowerCase()
+          .includes(keyword) ||
         (product.categoryName || "")
           .toLowerCase()
           .includes(keyword)
@@ -153,7 +161,10 @@ export default function ProductsPage() {
       return "OUT OF STOCK";
     }
 
-    if (product.currentStock <= product.minimumStockLevel) {
+    if (
+      product.currentStock <=
+      product.minimumStockLevel
+    ) {
       return "LOW STOCK";
     }
 
@@ -161,339 +172,971 @@ export default function ProductsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 p-6">
-      <div className="mx-auto max-w-7xl">
+    <main className="min-h-screen bg-[#f5f7fb] text-slate-900">
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Product Management
-          </h1>
+      {/* =====================================================
+          PAGE HEADER
+      ====================================================== */}
 
-          <p className="mt-2 text-gray-600">
-            Add products and manage your inventory items.
-          </p>
+      <div className="border-b border-slate-200/80 bg-white">
+
+        <div className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8">
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+            <div>
+
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                Inventory
+              </div>
+
+              <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                Product Management
+              </h1>
+
+              <p className="mt-1.5 text-sm text-slate-500">
+                Add products and manage your inventory catalogue.
+              </p>
+
+            </div>
+
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                <BoxIcon />
+              </div>
+
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                  Total Products
+                </p>
+
+                <p className="text-sm font-bold text-slate-800">
+                  {products.length}
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+      </div>
 
-          {/* Add Product */}
-          <div className="rounded-2xl bg-white p-6 shadow-lg">
-            <h2 className="mb-5 text-xl font-semibold">
-              Add Product
-            </h2>
+
+      {/* =====================================================
+          MAIN CONTENT
+      ====================================================== */}
+
+      <div className="mx-auto max-w-[1500px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+
+        <div className="grid items-start gap-6 xl:grid-cols-[390px_minmax(0,1fr)]">
+
+
+          {/* =================================================
+              ADD PRODUCT FORM
+          ================================================== */}
+
+          <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+
+            {/* Form header */}
+            <div className="border-b border-slate-100 bg-gradient-to-br from-[#081525] to-[#12345a] px-5 py-5 text-white sm:px-6">
+
+              <div className="flex items-center gap-3">
+
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
+                  <PlusIcon />
+                </div>
+
+                <div>
+                  <h2 className="font-bold">
+                    Add Product
+                  </h2>
+
+                  <p className="mt-0.5 text-xs text-white/45">
+                    Create a new inventory item
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+
 
             <form
               onSubmit={handleSubmit}
-              className="space-y-4"
+              className="space-y-4 p-5 sm:p-6"
             >
 
               {/* Product Code */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Product Code
-                </label>
+              <FormField
+                label="Product Code"
+                htmlFor="productCode"
+              >
 
                 <input
+                  id="productCode"
                   type="text"
                   value={productCode}
                   onChange={(e) =>
-                    setProductCode(e.target.value.toUpperCase())
+                    setProductCode(
+                      e.target.value.toUpperCase(),
+                    )
                   }
                   placeholder="Example: EL-00125"
                   required
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-black"
+                  className="premium-input"
                 />
-              </div>
+
+              </FormField>
+
 
               {/* Product Name */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Product Name
-                </label>
+              <FormField
+                label="Product Name"
+                htmlFor="productName"
+              >
 
                 <input
+                  id="productName"
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) =>
+                    setName(e.target.value)
+                  }
                   placeholder="Example: LED Bulb 12W"
                   required
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-black"
+                  className="premium-input"
                 />
-              </div>
 
-              {/* Category */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Category
-                </label>
+              </FormField>
 
-                <select
-                  value={categoryId}
-                  onChange={(e) =>
-                    setCategoryId(e.target.value)
-                  }
-                  required
-                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-black"
+
+              {/* Category + Unit */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                <FormField
+                  label="Category"
+                  htmlFor="category"
                 >
-                  <option value="">
-                    Select Category
-                  </option>
 
-                  {categories
-                    .filter((category) => category.isActive)
-                    .map((category) => (
-                      <option
-                        key={category.id}
-                        value={category.id}
-                      >
-                        {category.categoryCode} -{" "}
-                        {category.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
+                  <select
+                    id="category"
+                    value={categoryId}
+                    onChange={(e) =>
+                      setCategoryId(e.target.value)
+                    }
+                    required
+                    className="premium-input appearance-none bg-white"
+                  >
 
-              {/* Unit */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Unit
-                </label>
+                    <option value="">
+                      Select Category
+                    </option>
 
-                <select
-                  value={unit}
-                  onChange={(e) => setUnit(e.target.value)}
-                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-black"
+                    {categories
+                      .filter(
+                        (category) =>
+                          category.isActive,
+                      )
+                      .map((category) => (
+                        <option
+                          key={category.id}
+                          value={category.id}
+                        >
+                          {category.categoryCode} -{" "}
+                          {category.name}
+                        </option>
+                      ))}
+
+                  </select>
+
+                </FormField>
+
+
+                <FormField
+                  label="Unit"
+                  htmlFor="unit"
                 >
-                  <option value="Piece">Piece</option>
-                  <option value="Box">Box</option>
-                  <option value="Packet">Packet</option>
-                  <option value="Kg">Kg</option>
-                  <option value="Gram">Gram</option>
-                  <option value="Litre">Litre</option>
-                  <option value="Meter">Meter</option>
-                  <option value="Set">Set</option>
-                  <option value="Pair">Pair</option>
-                </select>
+
+                  <select
+                    id="unit"
+                    value={unit}
+                    onChange={(e) =>
+                      setUnit(e.target.value)
+                    }
+                    className="premium-input appearance-none bg-white"
+                  >
+
+                    <option value="Piece">
+                      Piece
+                    </option>
+
+                    <option value="Box">
+                      Box
+                    </option>
+
+                    <option value="Packet">
+                      Packet
+                    </option>
+
+                    <option value="Kg">
+                      Kg
+                    </option>
+
+                    <option value="Gram">
+                      Gram
+                    </option>
+
+                    <option value="Litre">
+                      Litre
+                    </option>
+
+                    <option value="Meter">
+                      Meter
+                    </option>
+
+                    <option value="Set">
+                      Set
+                    </option>
+
+                    <option value="Pair">
+                      Pair
+                    </option>
+
+                  </select>
+
+                </FormField>
+
               </div>
 
-              {/* Selling Price */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Selling Price
-                </label>
 
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={sellingPrice}
-                  onChange={(e) =>
-                    setSellingPrice(e.target.value)
-                  }
-                  placeholder="Example: 250.00"
-                  required
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-black"
-                />
+              {/* Price + Minimum Stock */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                <FormField
+                  label="Selling Price"
+                  htmlFor="sellingPrice"
+                >
+
+                  <div className="relative">
+
+                    <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
+                      ₹
+                    </span>
+
+                    <input
+                      id="sellingPrice"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={sellingPrice}
+                      onChange={(e) =>
+                        setSellingPrice(
+                          e.target.value,
+                        )
+                      }
+                      placeholder="250.00"
+                      required
+                      className="premium-input pl-8"
+                    />
+
+                  </div>
+
+                </FormField>
+
+
+                <FormField
+                  label="Minimum Stock"
+                  htmlFor="minimumStock"
+                >
+
+                  <input
+                    id="minimumStock"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={minimumStockLevel}
+                    onChange={(e) =>
+                      setMinimumStockLevel(
+                        e.target.value,
+                      )
+                    }
+                    placeholder="20"
+                    required
+                    className="premium-input"
+                  />
+
+                </FormField>
+
               </div>
 
-              {/* Minimum Stock */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Minimum Stock Level
-                </label>
-
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={minimumStockLevel}
-                  onChange={(e) =>
-                    setMinimumStockLevel(e.target.value)
-                  }
-                  placeholder="Example: 20"
-                  required
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-black"
-                />
-              </div>
 
               {/* Opening Stock */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Opening Stock
-                </label>
+              <FormField
+                label="Opening Stock"
+                htmlFor="openingStock"
+              >
 
                 <input
+                  id="openingStock"
                   type="number"
                   min="0"
                   step="1"
                   value={openingStock}
                   onChange={(e) =>
-                    setOpeningStock(e.target.value)
+                    setOpeningStock(
+                      e.target.value,
+                    )
                   }
                   placeholder="Example: 100"
                   required
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-black"
+                  className="premium-input"
                 />
-              </div>
+
+              </FormField>
+
 
               {/* Remarks */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Remarks
-                </label>
+              <FormField
+                label="Remarks"
+                htmlFor="remarks"
+                optional
+              >
 
                 <textarea
+                  id="remarks"
                   value={remarks}
                   onChange={(e) =>
                     setRemarks(e.target.value)
                   }
-                  placeholder="Optional remarks"
+                  placeholder="Optional product notes..."
                   rows={3}
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-black"
+                  className="premium-input resize-none"
                 />
-              </div>
 
+              </FormField>
+
+
+              {/* Message */}
               {message && (
-                <div className="rounded-xl bg-gray-100 px-4 py-3 text-sm text-gray-700">
-                  {message}
+                <div
+                  className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm ${
+                    message.toLowerCase().includes(
+                      "success",
+                    )
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border-red-200 bg-red-50 text-red-700"
+                  }`}
+                >
+
+                  <span className="mt-0.5">
+                    {message
+                      .toLowerCase()
+                      .includes("success")
+                      ? "✓"
+                      : "!"}
+                  </span>
+
+                  <span>{message}</span>
+
                 </div>
               )}
 
+
+              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-xl bg-black px-4 py-3 font-semibold text-white hover:bg-gray-800 disabled:opacity-60"
+                className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-500/25 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
               >
-                {loading ? "Saving..." : "Add Product"}
+
+                {loading ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    Saving Product...
+                  </>
+                ) : (
+                  <>
+                    <PlusIcon />
+                    Add Product
+                    <span className="text-lg transition-transform group-hover:translate-x-1">
+                      →
+                    </span>
+                  </>
+                )}
+
               </button>
+
             </form>
-          </div>
 
-          {/* Product List */}
-          <div className="rounded-2xl bg-white p-6 shadow-lg lg:col-span-2">
+          </section>
 
-            <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-xl font-semibold">
-                  Products
-                </h2>
 
-                <p className="mt-1 text-sm text-gray-500">
-                  {products.length} product
-                  {products.length !== 1 ? "s" : ""}
-                </p>
+          {/* =================================================
+              PRODUCT LIST
+          ================================================== */}
+
+          <section className="min-w-0 overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+
+            {/* List header */}
+            <div className="border-b border-slate-100 p-5 sm:p-6">
+
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
+                <div>
+
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-600">
+                    Catalogue
+                  </p>
+
+                  <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-900">
+                    Products
+                  </h2>
+
+                  <p className="mt-1 text-sm text-slate-400">
+                    {filteredProducts.length} of{" "}
+                    {products.length} products
+                  </p>
+
+                </div>
+
+
+                {/* Search */}
+                <div className="relative w-full lg:max-w-[300px]">
+
+                  <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                    <SearchIcon />
+                  </div>
+
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) =>
+                      setSearch(e.target.value)
+                    }
+                    placeholder="Search products..."
+                    className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-500/5"
+                  />
+
+                </div>
+
               </div>
 
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search products..."
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-black sm:w-64"
-              />
             </div>
 
+
+            {/* Loading */}
             {loadingData ? (
-              <div className="rounded-xl bg-gray-50 p-6 text-center text-gray-500">
-                Loading products...
+
+              <div className="p-10 text-center">
+
+                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600" />
+
+                <p className="mt-4 text-sm text-slate-400">
+                  Loading products...
+                </p>
+
               </div>
+
             ) : filteredProducts.length === 0 ? (
-              <div className="rounded-xl bg-gray-50 p-6 text-center text-gray-500">
-                No products found.
+
+              /* Empty */
+              <div className="p-10 text-center sm:p-14">
+
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                  <BoxIcon />
+                </div>
+
+                <p className="mt-4 font-bold text-slate-700">
+                  No products found
+                </p>
+
+                <p className="mt-1 text-sm text-slate-400">
+                  Try another search or add a new product.
+                </p>
+
               </div>
+
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[850px] text-left text-sm">
 
-                  <thead>
-                    <tr className="border-b bg-gray-50">
-                      <th className="px-4 py-3">
-                        Code
-                      </th>
+              <>
 
-                      <th className="px-4 py-3">
-                        Product
-                      </th>
+                {/* =================================================
+                    DESKTOP TABLE
+                ================================================== */}
 
-                      <th className="px-4 py-3">
-                        Category
-                      </th>
+                <div className="hidden overflow-x-auto md:block">
 
-                      <th className="px-4 py-3">
-                        Price
-                      </th>
+                  <table className="w-full text-left">
 
-                      <th className="px-4 py-3">
-                        Stock
-                      </th>
+                    <thead>
+                      <tr className="border-b border-slate-100 bg-slate-50/70">
 
-                      <th className="px-4 py-3">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
+                        <th className="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                          Product
+                        </th>
 
-                  <tbody>
-                    {filteredProducts.map((product) => {
+                        <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                          Category
+                        </th>
+
+                        <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                          Price
+                        </th>
+
+                        <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                          Stock
+                        </th>
+
+                        <th className="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                          Status
+                        </th>
+
+                      </tr>
+                    </thead>
+
+
+                    <tbody className="divide-y divide-slate-100">
+
+                      {filteredProducts.map(
+                        (product) => {
+                          const stockStatus =
+                            getStockStatus(
+                              product,
+                            );
+
+                          return (
+                            <tr
+                              key={product.id}
+                              className="group transition hover:bg-slate-50/70"
+                            >
+
+                              {/* Product */}
+                              <td className="px-5 py-4">
+
+                                <div className="flex items-center gap-3">
+
+                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 text-slate-500">
+                                    <BoxIcon />
+                                  </div>
+
+                                  <div className="min-w-0">
+
+                                    <p className="truncate text-sm font-bold text-slate-800">
+                                      {product.name}
+                                    </p>
+
+                                    <p className="mt-0.5 text-xs text-slate-400">
+                                      {product.productCode}
+                                      {" • "}
+                                      {product.unit}
+                                    </p>
+
+                                  </div>
+
+                                </div>
+
+                              </td>
+
+
+                              {/* Category */}
+                              <td className="px-4 py-4">
+
+                                <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+                                  {product.categoryName ||
+                                    "-"}
+                                </span>
+
+                              </td>
+
+
+                              {/* Price */}
+                              <td className="whitespace-nowrap px-4 py-4">
+
+                                <p className="text-sm font-bold text-slate-800">
+                                  ₹
+                                  {Number(
+                                    product.sellingPrice,
+                                  ).toFixed(2)}
+                                </p>
+
+                              </td>
+
+
+                              {/* Stock */}
+                              <td className="px-4 py-4">
+
+                                <p
+                                  className={`text-sm font-bold ${
+                                    product.currentStock <=
+                                    0
+                                      ? "text-red-600"
+                                      : product.currentStock <=
+                                          product.minimumStockLevel
+                                        ? "text-amber-600"
+                                        : "text-slate-800"
+                                  }`}
+                                >
+                                  {product.currentStock}{" "}
+                                  <span className="text-xs font-medium text-slate-400">
+                                    {product.unit}
+                                  </span>
+                                </p>
+
+                                <p className="mt-0.5 text-[10px] text-slate-400">
+                                  Min:{" "}
+                                  {
+                                    product.minimumStockLevel
+                                  }
+                                </p>
+
+                              </td>
+
+
+                              {/* Status */}
+                              <td className="px-5 py-4">
+
+                                <StockBadge
+                                  status={
+                                    stockStatus
+                                  }
+                                />
+
+                              </td>
+
+                            </tr>
+                          );
+                        },
+                      )}
+
+                    </tbody>
+
+                  </table>
+
+                </div>
+
+
+                {/* =================================================
+                    MOBILE PRODUCT CARDS
+                ================================================== */}
+
+                <div className="divide-y divide-slate-100 md:hidden">
+
+                  {filteredProducts.map(
+                    (product) => {
                       const stockStatus =
                         getStockStatus(product);
 
                       return (
-                        <tr
+                        <div
                           key={product.id}
-                          className="border-b last:border-0"
+                          className="p-4 transition active:bg-slate-50"
                         >
-                          <td className="px-4 py-4 font-semibold">
-                            {product.productCode}
-                          </td>
 
-                          <td className="px-4 py-4">
-                            <div className="font-medium text-gray-900">
-                              {product.name}
+                          <div className="flex items-start gap-3">
+
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 text-slate-500">
+                              <BoxIcon />
                             </div>
 
-                            <div className="text-xs text-gray-500">
-                              Unit: {product.unit}
+                            <div className="min-w-0 flex-1">
+
+                              <div className="flex items-start justify-between gap-2">
+
+                                <div className="min-w-0">
+
+                                  <p className="truncate text-sm font-bold text-slate-800">
+                                    {product.name}
+                                  </p>
+
+                                  <p className="mt-0.5 text-xs text-slate-400">
+                                    {product.productCode}
+                                  </p>
+
+                                </div>
+
+                                <StockBadge
+                                  status={
+                                    stockStatus
+                                  }
+                                />
+
+                              </div>
+
+                              <div className="mt-4 grid grid-cols-2 gap-3">
+
+                                <ProductInfo
+                                  label="Category"
+                                  value={
+                                    product.categoryName ||
+                                    "-"
+                                  }
+                                />
+
+                                <ProductInfo
+                                  label="Unit"
+                                  value={
+                                    product.unit
+                                  }
+                                />
+
+                                <ProductInfo
+                                  label="Selling Price"
+                                  value={`₹${Number(
+                                    product.sellingPrice,
+                                  ).toFixed(2)}`}
+                                />
+
+                                <ProductInfo
+                                  label="Stock"
+                                  value={`${product.currentStock} ${product.unit}`}
+                                  danger={
+                                    product.currentStock <=
+                                    product.minimumStockLevel
+                                  }
+                                />
+
+                              </div>
+
                             </div>
-                          </td>
 
-                          <td className="px-4 py-4">
-                            {product.categoryName || "-"}
-                          </td>
+                          </div>
 
-                          <td className="px-4 py-4">
-                            ₹
-                            {Number(
-                              product.sellingPrice,
-                            ).toFixed(2)}
-                          </td>
-
-                          <td className="px-4 py-4">
-                            <div className="font-semibold">
-                              {product.currentStock}
-                            </div>
-
-                            <div className="text-xs text-gray-500">
-                              Min:{" "}
-                              {product.minimumStockLevel}
-                            </div>
-                          </td>
-
-                          <td className="px-4 py-4">
-                            {stockStatus}
-                          </td>
-                        </tr>
+                        </div>
                       );
-                    })}
-                  </tbody>
+                    },
+                  )}
 
-                </table>
-              </div>
+                </div>
+
+              </>
             )}
-          </div>
+
+          </section>
+
         </div>
+
       </div>
+
+
+      {/* =====================================================
+          PAGE STYLES
+      ====================================================== */}
+
+      <style jsx global>{`
+        .premium-input {
+          width: 100%;
+          height: 44px;
+          border-radius: 12px;
+          border: 1px solid rgb(226 232 240);
+          background: rgb(248 250 252);
+          padding: 0 13px;
+          font-size: 14px;
+          color: rgb(30 41 59);
+          outline: none;
+          transition:
+            border-color 180ms ease,
+            background 180ms ease,
+            box-shadow 180ms ease;
+        }
+
+        textarea.premium-input {
+          height: auto;
+          padding-top: 11px;
+          padding-bottom: 11px;
+        }
+
+        .premium-input::placeholder {
+          color: rgb(148 163 184);
+        }
+
+        .premium-input:hover {
+          border-color: rgb(203 213 225);
+          background: white;
+        }
+
+        .premium-input:focus {
+          border-color: rgb(96 165 250);
+          background: white;
+          box-shadow: 0 0 0 4px rgb(59 130 246 / 0.06);
+        }
+
+        select.premium-input {
+          cursor: pointer;
+        }
+      `}</style>
+
     </main>
+  );
+}
+
+
+/* =========================================================
+   FORM FIELD
+========================================================= */
+
+function FormField({
+  label,
+  htmlFor,
+  children,
+  optional = false,
+}: {
+  label: string;
+  htmlFor: string;
+  children: React.ReactNode;
+  optional?: boolean;
+}) {
+  return (
+    <div>
+
+      <label
+        htmlFor={htmlFor}
+        className="mb-1.5 flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500"
+      >
+        {label}
+
+        {optional && (
+          <span className="font-normal normal-case tracking-normal text-slate-400">
+            (optional)
+          </span>
+        )}
+
+      </label>
+
+      {children}
+
+    </div>
+  );
+}
+
+
+/* =========================================================
+   PRODUCT INFO
+========================================================= */
+
+function ProductInfo({
+  label,
+  value,
+  danger = false,
+}: {
+  label: string;
+  value: string;
+  danger?: boolean;
+}) {
+  return (
+    <div>
+
+      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+        {label}
+      </p>
+
+      <p
+        className={`mt-0.5 truncate text-xs font-semibold ${
+          danger
+            ? "text-red-600"
+            : "text-slate-700"
+        }`}
+      >
+        {value}
+      </p>
+
+    </div>
+  );
+}
+
+
+/* =========================================================
+   STOCK BADGE
+========================================================= */
+
+function StockBadge({
+  status,
+}: {
+  status: string;
+}) {
+  if (status === "OUT OF STOCK") {
+    return (
+      <span className="inline-flex whitespace-nowrap rounded-full bg-red-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-red-600">
+        Out of Stock
+      </span>
+    );
+  }
+
+  if (status === "LOW STOCK") {
+    return (
+      <span className="inline-flex whitespace-nowrap rounded-full bg-amber-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-amber-700">
+        Low Stock
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex whitespace-nowrap rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-emerald-700">
+      Available
+    </span>
+  );
+}
+
+
+/* =========================================================
+   BOX ICON
+========================================================= */
+
+function BoxIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" />
+      <path d="M4 7.5 12 12l8-4.5" />
+      <path d="M12 12v9" />
+    </svg>
+  );
+}
+
+
+/* =========================================================
+   PLUS ICON
+========================================================= */
+
+function PlusIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </svg>
+  );
+}
+
+
+/* =========================================================
+   SEARCH ICON
+========================================================= */
+
+function SearchIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 4 4" />
+    </svg>
   );
 }
