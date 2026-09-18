@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1789536271001,
+      "tag": "0000_fresh_bishop",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1789536963761,
+      "tag": "0001_thin_zemo",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1789539203984,
+      "tag": "0002_long_gertrude_yorkes",
+      "breakpoints": true
+    }
+  ]
+}
