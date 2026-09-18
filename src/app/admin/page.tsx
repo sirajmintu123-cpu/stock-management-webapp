@@ -43,11 +43,11 @@ export default async function AdminPage() {
     .from(customerEnquiries);
 
   const salesResult = await db
-  .select({
-    totalSales: sql<number>`COUNT(*)`,
-  })
-  .from(sales)
-  .where(eq(sales.paymentStatus, "PAID"));
+    .select({
+      totalSales: sql<number>`COUNT(*)`,
+    })
+    .from(sales)
+    .where(eq(sales.paymentStatus, "PAID"));
 
   const totalProducts = Number(productResult[0]?.totalProducts ?? 0);
   const totalStock = Number(productResult[0]?.totalStock ?? 0);
@@ -57,28 +57,29 @@ export default async function AdminPage() {
   const totalSales = Number(salesResult[0]?.totalSales ?? 0);
 
   // ---------------------------------------------------------
+  // Low stock
+  // ---------------------------------------------------------
+
+  const lowStockProducts = await db
+    .select({
+      id: products.id,
+      productCode: products.productCode,
+      name: products.name,
+      unit: products.unit,
+      currentStock: products.currentStock,
+      minimumStockLevel: products.minimumStockLevel,
+    })
+    .from(products)
+    .where(
+      sql`${products.isActive} = true
+        AND ${products.currentStock} <= ${products.minimumStockLevel}`,
+    )
+    .orderBy(products.currentStock)
+    .limit(10);
+
+  // ---------------------------------------------------------
   // Recent enquiries
   // ---------------------------------------------------------
-// ---------------------------------------------------------
-// Low stock products
-// ---------------------------------------------------------
-
-const lowStockProducts = await db
-  .select({
-    id: products.id,
-    productCode: products.productCode,
-    name: products.name,
-    unit: products.unit,
-    currentStock: products.currentStock,
-    minimumStockLevel: products.minimumStockLevel,
-  })
-  .from(products)
-  .where(
-    sql`${products.isActive} = true
-      AND ${products.currentStock} <= ${products.minimumStockLevel}`,
-  )
-  .orderBy(products.currentStock)
-  .limit(10);
 
   const recentEnquiries = await db
     .select({
@@ -109,499 +110,861 @@ const lowStockProducts = await db
     .limit(5);
 
   return (
-    <main className="min-h-screen bg-gray-100 p-4 sm:p-6">
-      <div className="mx-auto max-w-7xl">
-        <div className="rounded-2xl bg-white p-6 shadow-lg sm:p-8">
+    <main className="min-h-screen bg-[#f5f7fb] text-slate-900">
 
-          {/* Header */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-  <div>
-    <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-      Admin Dashboard
-    </h1>
+      {/* =====================================================
+          TOP HEADER
+      ====================================================== */}
 
-    <p className="mt-2 text-gray-600">
-      Welcome, {user.name}
-    </p>
-  </div>
+      <header className="border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
 
-  <div className="flex flex-wrap gap-3">
-    <Link
-      href="/admin/profile"
-      className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
-    >
-      ⚙ Profile / Password
-    </Link>
+        <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
 
-    <AdminActions />
-  </div>
-</div>
-          {/* Dashboard Cards */}
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="flex items-center gap-3">
 
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-5">
-              <p className="text-sm font-medium text-gray-500">
-                Products
+            {/* Brand icon */}
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 shadow-lg shadow-blue-500/20">
+
+              <svg
+                viewBox="0 0 24 24"
+                className="h-5 w-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              >
+                <path d="M4 7.5 12 3l8 4.5-8 4.5L4 7.5Z" />
+                <path d="M4 12.5 12 17l8-4.5" />
+                <path d="M4 17 12 21l8-4" />
+              </svg>
+
+            </div>
+
+            <div className="hidden sm:block">
+              <p className="text-sm font-bold tracking-wide text-slate-900">
+                Inventory Management
               </p>
 
-              <p className="mt-2 text-3xl font-bold text-gray-900">
-                {totalProducts}
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Active products
+              <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">
+                Admin Workspace
               </p>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-5">
-              <p className="text-sm font-medium text-gray-500">
-                Current Stock
-              </p>
-
-              <p className="mt-2 text-3xl font-bold text-gray-900">
-                {totalStock}
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Total available quantity
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-5">
-              <p className="text-sm font-medium text-gray-500">
-                Enquiries
-              </p>
-
-              <p className="mt-2 text-3xl font-bold text-gray-900">
-                {totalEnquiries}
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Customer enquiries
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-5">
-              <p className="text-sm font-medium text-gray-500">
-                Sales
-              </p>
-
-              <p className="mt-2 text-3xl font-bold text-gray-900">
-                {totalSales}
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Paid sales
-              </p>
-            </div>
           </div>
 
-         {/* Quick Access */}
-<div className="mt-8">
-  <h2 className="text-lg font-semibold text-gray-900">
-    Quick Access
-  </h2>
+          <div className="flex items-center gap-2 sm:gap-3">
 
-  <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-
-    <Link
-      href="/admin/products"
-      className="rounded-xl border border-gray-200 bg-white p-5 transition hover:border-gray-400 hover:shadow-md"
-    >
-      <p className="font-semibold text-gray-900">
-        Products
-      </p>
-
-      <p className="mt-1 text-sm text-gray-500">
-        Manage products and pricing
-      </p>
-    </Link>
-
-    <Link
-      href="/admin/stock"
-      className="rounded-xl border border-gray-200 bg-white p-5 transition hover:border-gray-400 hover:shadow-md"
-    >
-      <p className="font-semibold text-gray-900">
-        Stock Management
-      </p>
-
-      <p className="mt-1 text-sm text-gray-500">
-        Add stock and view stock history
-      </p>
-    </Link>
-
-    <Link
-      href="/admin/enquiries"
-      className="rounded-xl border border-gray-200 bg-white p-5 transition hover:border-gray-400 hover:shadow-md"
-    >
-      <p className="font-semibold text-gray-900">
-        Enquiries
-      </p>
-
-      <p className="mt-1 text-sm text-gray-500">
-        Manage customer enquiries
-      </p>
-    </Link>
-
-    <Link
-      href="/admin/sales"
-      className="rounded-xl border border-gray-200 bg-white p-5 transition hover:border-gray-400 hover:shadow-md"
-    >
-      <p className="font-semibold text-gray-900">
-        Sales
-      </p>
-
-      <p className="mt-1 text-sm text-gray-500">
-        Record and manage sales
-      </p>
-    </Link>
-
-    <Link
-      href="/admin/employees"
-      className="rounded-xl border border-gray-200 bg-white p-5 transition hover:border-gray-400 hover:shadow-md"
-    >
-      <p className="font-semibold text-gray-900">
-        Employee Management
-      </p>
-
-      <p className="mt-1 text-sm text-gray-500">
-        Add and manage employee accounts and access
-      </p>
-    </Link>
-
-  </div>
-</div>
-
-          {/* Recent Enquiries */}
-          <div className="mt-10">
-
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Recent Customer Enquiries
-              </h2>
-
-              <a
-                href="/admin/enquiries"
-                className="text-sm font-medium text-blue-600 hover:text-blue-800"
+            <Link
+              href="/admin/profile"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
               >
-                View All →
-              </a>
+                <circle cx="12" cy="8" r="3" />
+                <path d="M5 20a7 7 0 0 1 14 0" />
+              </svg>
+
+              <span className="hidden sm:inline">
+                Profile
+              </span>
+            </Link>
+
+            <AdminActions />
+
+          </div>
+
+        </div>
+
+      </header>
+
+
+      {/* =====================================================
+          MAIN CONTENT
+      ====================================================== */}
+
+      <div className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+
+        {/* Welcome */}
+        <section className="relative overflow-hidden rounded-[26px] bg-gradient-to-br from-[#081525] via-[#0d1e35] to-[#102c4b] p-6 shadow-[0_20px_60px_rgba(15,23,42,0.18)] sm:p-8">
+
+          {/* Decorative glow */}
+          <div className="pointer-events-none absolute -right-20 -top-32 h-72 w-72 rounded-full bg-cyan-400/15 blur-3xl" />
+
+          <div className="pointer-events-none absolute -bottom-40 left-1/2 h-80 w-80 rounded-full bg-blue-500/10 blur-3xl" />
+
+          <div className="relative">
+
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs font-semibold text-cyan-300">
+
+              <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,0.8)]" />
+
+              Admin Workspace
+
             </div>
 
-            <div className="mt-4 overflow-hidden rounded-xl border border-gray-200">
+            <h1 className="mt-5 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Good to see you, {user.name}
+            </h1>
 
-              {recentEnquiries.length === 0 ? (
-                <div className="p-8 text-center text-sm text-gray-500">
-                  No customer enquiries found.
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-white/50 sm:text-base">
+              Monitor inventory, customer enquiries, sales and employee
+              activity from one centralized workspace.
+            </p>
+
+          </div>
+
+        </section>
+
+
+        {/* =====================================================
+            KPI CARDS
+        ====================================================== */}
+
+        <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
+          <StatCard
+            title="Active Products"
+            value={totalProducts}
+            subtitle="Products currently active"
+            icon="box"
+            accent="blue"
+          />
+
+          <StatCard
+            title="Current Stock"
+            value={totalStock}
+            subtitle="Total available quantity"
+            icon="inventory"
+            accent="cyan"
+          />
+
+          <StatCard
+            title="Customer Enquiries"
+            value={totalEnquiries}
+            subtitle="All recorded enquiries"
+            icon="users"
+            accent="violet"
+          />
+
+          <StatCard
+            title="Paid Sales"
+            value={totalSales}
+            subtitle="Completed paid sales"
+            icon="chart"
+            accent="emerald"
+          />
+
+        </section>
+
+
+        {/* =====================================================
+            QUICK ACCESS
+        ====================================================== */}
+
+        <section className="mt-8">
+
+          <div className="flex items-end justify-between">
+
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
+                Workspace
+              </p>
+
+              <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-900">
+                Quick Access
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Manage the core areas of your business.
+              </p>
+            </div>
+
+          </div>
+
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+
+            <QuickCard
+              href="/admin/products"
+              title="Products"
+              description="Manage products and pricing"
+              icon="box"
+            />
+
+            <QuickCard
+              href="/admin/stock"
+              title="Stock Management"
+              description="Add stock and view history"
+              icon="inventory"
+            />
+
+            <QuickCard
+              href="/admin/enquiries"
+              title="Enquiries"
+              description="Manage customer enquiries"
+              icon="message"
+            />
+
+            <QuickCard
+              href="/admin/sales"
+              title="Sales"
+              description="Record and manage sales"
+              icon="chart"
+            />
+
+            <QuickCard
+              href="/admin/employees"
+              title="Employees"
+              description="Manage employee accounts"
+              icon="users"
+            />
+
+          </div>
+
+        </section>
+
+
+        {/* =====================================================
+            LOWER DASHBOARD
+        ====================================================== */}
+
+        <div className="mt-8 grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+
+
+          {/* ===================================================
+              RECENT ENQUIRIES
+          ==================================================== */}
+
+          <section className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-sm">
+
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5 sm:px-6">
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+                  Customer Activity
+                </p>
+
+                <h2 className="mt-1 text-lg font-bold text-slate-900">
+                  Recent Enquiries
+                </h2>
+              </div>
+
+              <Link
+                href="/admin/enquiries"
+                className="rounded-xl px-3 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
+              >
+                View All →
+              </Link>
+
+            </div>
+
+
+            {recentEnquiries.length === 0 ? (
+              <div className="px-6 py-14 text-center">
+
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  >
+                    <path d="M5 5h14v11H8l-3 3V5Z" />
+                  </svg>
                 </div>
-              ) : (
-                <>
-                  {/* Desktop */}
-                  <div className="hidden overflow-x-auto md:block">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                            Enquiry
-                          </th>
 
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                            Customer
-                          </th>
+                <p className="mt-4 text-sm font-semibold text-slate-700">
+                  No customer enquiries
+                </p>
 
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                            Product
-                          </th>
+                <p className="mt-1 text-xs text-slate-400">
+                  New enquiries will appear here.
+                </p>
 
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                            Qty
-                          </th>
+              </div>
+            ) : (
+              <>
 
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                            Employee
-                          </th>
+                {/* Desktop table */}
+                <div className="hidden overflow-x-auto md:block">
 
-                          <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                            Status
-                          </th>
-                        </tr>
-                      </thead>
+                  <table className="min-w-full">
 
-                      <tbody className="divide-y divide-gray-200 bg-white">
-                        {recentEnquiries.map((enquiry) => (
-                          <tr key={enquiry.id}>
-                            <td className="whitespace-nowrap px-4 py-4 text-sm font-medium text-gray-900">
-                              {enquiry.enquiryCode}
-                            </td>
+                    <thead>
+                      <tr className="border-b border-slate-100 bg-slate-50/70">
 
-                            <td className="px-4 py-4 text-sm text-gray-700">
-                              <div>
-                                {enquiry.customerName}
-                              </div>
+                        <TableHead>Enquiry</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Product</TableHead>
+                        <TableHead>Qty</TableHead>
+                        <TableHead>Employee</TableHead>
+                        <TableHead>Status</TableHead>
 
-                              {enquiry.customerMobile && (
-                                <div className="text-xs text-gray-500">
-                                  {enquiry.customerMobile}
-                                </div>
-                              )}
-                            </td>
+                      </tr>
+                    </thead>
 
-                            <td className="px-4 py-4 text-sm text-gray-700">
-                              {enquiry.productName}
-                            </td>
+                    <tbody className="divide-y divide-slate-100">
 
-                            <td className="px-4 py-4 text-sm text-gray-700">
-                              {enquiry.requiredQuantity}
-                            </td>
+                      {recentEnquiries.map((enquiry) => (
 
-                            <td className="px-4 py-4 text-sm text-gray-700">
-                              {enquiry.submittedByName}
-                            </td>
+                        <tr
+                          key={enquiry.id}
+                          className="transition hover:bg-slate-50/70"
+                        >
 
-                            <td className="px-4 py-4">
-                              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-                                {enquiry.status.replace("_", " ")}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                          <td className="whitespace-nowrap px-5 py-4 text-sm font-bold text-slate-800">
+                            {enquiry.enquiryCode}
+                          </td>
 
-                  {/* Mobile */}
-                  <div className="divide-y divide-gray-200 md:hidden">
-                    {recentEnquiries.map((enquiry) => (
-                      <div
-                        key={enquiry.id}
-                        className="p-4"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="font-semibold text-gray-900">
-                              {enquiry.enquiryCode}
-                            </p>
+                          <td className="px-5 py-4">
 
-                            <p className="mt-1 text-sm text-gray-700">
+                            <p className="text-sm font-semibold text-slate-800">
                               {enquiry.customerName}
                             </p>
 
                             {enquiry.customerMobile && (
-                              <p className="text-xs text-gray-500">
+                              <p className="mt-0.5 text-xs text-slate-400">
                                 {enquiry.customerMobile}
                               </p>
                             )}
-                          </div>
 
-                          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-                            {enquiry.status.replace("_", " ")}
-                          </span>
-                        </div>
+                          </td>
 
-                        <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                          <div>
-                            <p className="text-xs text-gray-500">
-                              Product
-                            </p>
+                          <td className="px-5 py-4 text-sm text-slate-600">
+                            {enquiry.productName}
+                          </td>
 
-                            <p className="font-medium text-gray-800">
-                              {enquiry.productName}
-                            </p>
-                          </div>
+                          <td className="px-5 py-4">
 
-                          <div>
-                            <p className="text-xs text-gray-500">
-                              Quantity
-                            </p>
-
-                            <p className="font-medium text-gray-800">
+                            <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">
                               {enquiry.requiredQuantity}
-                            </p>
-                          </div>
+                            </span>
 
-                          <div>
-                            <p className="text-xs text-gray-500">
-                              Employee
-                            </p>
+                          </td>
 
-                            <p className="font-medium text-gray-800">
-                              {enquiry.submittedByName}
-                            </p>
-                          </div>
+                          <td className="px-5 py-4 text-sm text-slate-600">
+                            {enquiry.submittedByName}
+                          </td>
 
-                          <div>
-                            <p className="text-xs text-gray-500">
-                              Date
-                            </p>
+                          <td className="px-5 py-4">
+                            <StatusBadge status={enquiry.status} />
+                          </td>
 
-                            <p className="font-medium text-gray-800">
-                              {enquiry.createdAt.toLocaleDateString(
-                                "en-IN",
-                              )}
+                        </tr>
+
+                      ))}
+
+                    </tbody>
+
+                  </table>
+
+                </div>
+
+
+                {/* Mobile */}
+                <div className="divide-y divide-slate-100 md:hidden">
+
+                  {recentEnquiries.map((enquiry) => (
+
+                    <div
+                      key={enquiry.id}
+                      className="p-5 transition hover:bg-slate-50"
+                    >
+
+                      <div className="flex items-start justify-between gap-3">
+
+                        <div>
+                          <p className="font-bold text-slate-800">
+                            {enquiry.enquiryCode}
+                          </p>
+
+                          <p className="mt-1 text-sm font-medium text-slate-600">
+                            {enquiry.customerName}
+                          </p>
+
+                          {enquiry.customerMobile && (
+                            <p className="text-xs text-slate-400">
+                              {enquiry.customerMobile}
                             </p>
-                          </div>
+                          )}
                         </div>
+
+                        <StatusBadge status={enquiry.status} />
+
                       </div>
-                    ))}
+
+                      <div className="mt-4 grid grid-cols-2 gap-4">
+
+                        <InfoItem
+                          label="Product"
+                          value={enquiry.productName}
+                        />
+
+                        <InfoItem
+                          label="Quantity"
+                          value={String(enquiry.requiredQuantity)}
+                        />
+
+                        <InfoItem
+                          label="Employee"
+                          value={enquiry.submittedByName}
+                        />
+
+                        <InfoItem
+                          label="Date"
+                          value={enquiry.createdAt.toLocaleDateString(
+                            "en-IN",
+                          )}
+                        />
+
+                      </div>
+
+                    </div>
+
+                  ))}
+
+                </div>
+
+              </>
+            )}
+
+          </section>
+
+
+          {/* ===================================================
+              LOW STOCK
+          ==================================================== */}
+
+          <section className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-sm">
+
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5">
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-red-500">
+                  Inventory Alert
+                </p>
+
+                <h2 className="mt-1 text-lg font-bold text-slate-900">
+                  Low Stock
+                </h2>
+              </div>
+
+              <Link
+                href="/admin/stock"
+                className="rounded-xl px-3 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
+              >
+                Manage →
+              </Link>
+
+            </div>
+
+
+            {lowStockProducts.length === 0 ? (
+
+              <div className="flex flex-col items-center px-6 py-14 text-center">
+
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-6 w-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  >
+                    <path d="m5 12 4 4L19 6" />
+                  </svg>
+
+                </div>
+
+                <p className="mt-4 font-bold text-slate-800">
+                  Inventory looks healthy
+                </p>
+
+                <p className="mt-1 max-w-xs text-xs leading-5 text-slate-400">
+                  No active products are currently below their minimum stock level.
+                </p>
+
+              </div>
+
+            ) : (
+
+              <div className="divide-y divide-slate-100">
+
+                {lowStockProducts.map((product) => (
+
+                  <div
+                    key={product.id}
+                    className="p-5 transition hover:bg-red-50/30"
+                  >
+
+                    <div className="flex items-start justify-between gap-4">
+
+                      <div className="min-w-0">
+
+                        <p className="truncate text-sm font-bold text-slate-800">
+                          {product.name}
+                        </p>
+
+                        <p className="mt-1 text-xs text-slate-400">
+                          {product.productCode}
+                        </p>
+
+                      </div>
+
+                      <span className="shrink-0 rounded-full bg-red-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-red-600">
+                        Low
+                      </span>
+
+                    </div>
+
+
+                    <div className="mt-4">
+
+                      <div className="mb-2 flex items-center justify-between text-xs">
+
+                        <span className="font-medium text-slate-400">
+                          Current stock
+                        </span>
+
+                        <span className="font-bold text-red-600">
+                          {product.currentStock} {product.unit}
+                        </span>
+
+                      </div>
+
+                      <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-red-400 to-red-600"
+                          style={{
+                            width: `${Math.min(
+                              100,
+                              product.minimumStockLevel > 0
+                                ? (Number(product.currentStock) /
+                                    Number(product.minimumStockLevel)) *
+                                    100
+                                : 0,
+                            )}%`,
+                          }}
+                        />
+
+                      </div>
+
+                      <p className="mt-2 text-[11px] text-slate-400">
+                        Minimum level:{" "}
+                        <span className="font-semibold text-slate-600">
+                          {product.minimumStockLevel} {product.unit}
+                        </span>
+                      </p>
+
+                    </div>
+
                   </div>
-                </>
-              )}
-            </div>
-          </div>
-          {/* Low Stock Alerts */}
-<div className="mt-10">
 
-  <div className="flex items-center justify-between">
-    <h2 className="text-lg font-semibold text-gray-900">
-      Low Stock Alerts
-    </h2>
-
-    <a
-      href="/admin/stock"
-      className="text-sm font-medium text-blue-600 hover:text-blue-800"
-    >
-      Manage Stock →
-    </a>
-  </div>
-
-  <div className="mt-4 overflow-hidden rounded-xl border border-red-200">
-
-    {lowStockProducts.length === 0 ? (
-      <div className="p-8 text-center">
-        <p className="font-medium text-green-700">
-          All products have sufficient stock.
-        </p>
-
-        <p className="mt-1 text-sm text-gray-500">
-          No low-stock products at the moment.
-        </p>
-      </div>
-    ) : (
-      <>
-        {/* Desktop */}
-        <div className="hidden overflow-x-auto md:block">
-          <table className="min-w-full divide-y divide-gray-200">
-
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                  Product
-                </th>
-
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                  Product Code
-                </th>
-
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                  Current Stock
-                </th>
-
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                  Minimum Level
-                </th>
-
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500">
-                  Status
-                </th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-gray-200 bg-white">
-
-              {lowStockProducts.map((product) => (
-                <tr key={product.id}>
-
-                  <td className="px-4 py-4 text-sm font-medium text-gray-900">
-                    {product.name}
-                  </td>
-
-                  <td className="px-4 py-4 text-sm text-gray-600">
-                    {product.productCode}
-                  </td>
-
-                  <td className="px-4 py-4 text-sm font-semibold text-red-600">
-                    {product.currentStock} {product.unit}
-                  </td>
-
-                  <td className="px-4 py-4 text-sm text-gray-700">
-                    {product.minimumStockLevel} {product.unit}
-                  </td>
-
-                  <td className="px-4 py-4">
-                    <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                      LOW STOCK
-                    </span>
-                  </td>
-
-                </tr>
-              ))}
-
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile */}
-        <div className="divide-y divide-gray-200 md:hidden">
-
-          {lowStockProducts.map((product) => (
-            <div
-              key={product.id}
-              className="p-4"
-            >
-
-              <div className="flex items-start justify-between gap-3">
-
-                <div>
-                  <p className="font-semibold text-gray-900">
-                    {product.name}
-                  </p>
-
-                  <p className="mt-1 text-xs text-gray-500">
-                    {product.productCode}
-                  </p>
-                </div>
-
-                <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                  LOW STOCK
-                </span>
+                ))}
 
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-4">
+            )}
 
-                <div>
-                  <p className="text-xs text-gray-500">
-                    Current Stock
-                  </p>
-
-                  <p className="mt-1 font-semibold text-red-600">
-                    {product.currentStock} {product.unit}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-gray-500">
-                    Minimum Level
-                  </p>
-
-                  <p className="mt-1 font-semibold text-gray-800">
-                    {product.minimumStockLevel} {product.unit}
-                  </p>
-                </div>
-
-              </div>
-
-            </div>
-          ))}
+          </section>
 
         </div>
-      </>
-    )}
 
-  </div>
-</div>
+
+        {/* Footer */}
+        <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t border-slate-200 pt-5 text-xs text-slate-400 sm:flex-row">
+
+          <p>
+            Inventory Management System
+          </p>
+
+          <p>
+            Admin Workspace • {new Date().getFullYear()}
+          </p>
+
         </div>
+
       </div>
+
     </main>
+  );
+}
+
+
+/* =========================================================
+   STAT CARD
+========================================================= */
+
+function StatCard({
+  title,
+  value,
+  subtitle,
+  icon,
+  accent,
+}: {
+  title: string;
+  value: number;
+  subtitle: string;
+  icon: "box" | "inventory" | "users" | "chart";
+  accent: "blue" | "cyan" | "violet" | "emerald";
+}) {
+  const accents = {
+    blue: "from-blue-500 to-indigo-600 bg-blue-50 text-blue-600",
+    cyan: "from-cyan-500 to-blue-600 bg-cyan-50 text-cyan-600",
+    violet: "from-violet-500 to-indigo-600 bg-violet-50 text-violet-600",
+    emerald: "from-emerald-500 to-teal-600 bg-emerald-50 text-emerald-600",
+  };
+
+  const [gradient, iconBg, iconText] = accents[accent].split(" ");
+
+  return (
+    <div className="group relative overflow-hidden rounded-[22px] border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50">
+
+      <div
+        className={`absolute -right-10 -top-10 h-28 w-28 rounded-full bg-gradient-to-br ${gradient} opacity-[0.07] blur-2xl`}
+      />
+
+      <div className="relative">
+
+        <div className="flex items-center justify-between">
+
+          <div
+            className={`flex h-11 w-11 items-center justify-center rounded-2xl ${iconBg} ${iconText}`}
+          >
+            <DashboardIcon type={icon} />
+          </div>
+
+          <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-300">
+            Overview
+          </span>
+
+        </div>
+
+        <p className="mt-5 text-sm font-semibold text-slate-500">
+          {title}
+        </p>
+
+        <p className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
+          {value.toLocaleString("en-IN")}
+        </p>
+
+        <p className="mt-1 text-xs text-slate-400">
+          {subtitle}
+        </p>
+
+      </div>
+
+    </div>
+  );
+}
+
+
+/* =========================================================
+   QUICK CARD
+========================================================= */
+
+function QuickCard({
+  href,
+  title,
+  description,
+  icon,
+}: {
+  href: string;
+  title: string;
+  description: string;
+  icon: "box" | "inventory" | "message" | "chart" | "users";
+}) {
+  return (
+    <Link
+      href={href}
+      className="group relative overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-100/40"
+    >
+
+      <div className="flex items-start justify-between">
+
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600 transition group-hover:bg-blue-50 group-hover:text-blue-600">
+          <DashboardIcon type={icon} />
+        </div>
+
+        <span className="text-lg text-slate-300 transition group-hover:translate-x-1 group-hover:text-blue-500">
+          →
+        </span>
+
+      </div>
+
+      <h3 className="mt-5 font-bold text-slate-900">
+        {title}
+      </h3>
+
+      <p className="mt-1 text-xs leading-5 text-slate-400">
+        {description}
+      </p>
+
+    </Link>
+  );
+}
+
+
+/* =========================================================
+   STATUS BADGE
+========================================================= */
+
+function StatusBadge({ status }: { status: string }) {
+  const normalized = status.toUpperCase();
+
+  let classes =
+    "bg-slate-100 text-slate-600";
+
+  if (
+    normalized.includes("PENDING") ||
+    normalized.includes("NEW")
+  ) {
+    classes = "bg-amber-50 text-amber-700";
+  }
+
+  if (
+    normalized.includes("CONVERT") ||
+    normalized.includes("COMPLETED") ||
+    normalized.includes("SOLD")
+  ) {
+    classes = "bg-emerald-50 text-emerald-700";
+  }
+
+  if (
+    normalized.includes("CANCEL") ||
+    normalized.includes("REJECT")
+  ) {
+    classes = "bg-red-50 text-red-700";
+  }
+
+  return (
+    <span
+      className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${classes}`}
+    >
+      {status.replace(/_/g, " ")}
+    </span>
+  );
+}
+
+
+/* =========================================================
+   TABLE HEAD
+========================================================= */
+
+function TableHead({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+      {children}
+    </th>
+  );
+}
+
+
+/* =========================================================
+   INFO ITEM
+========================================================= */
+
+function InfoItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div>
+      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+        {label}
+      </p>
+
+      <p className="mt-1 truncate text-sm font-semibold text-slate-700">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+
+/* =========================================================
+   ICONS
+========================================================= */
+
+function DashboardIcon({
+  type,
+}: {
+  type:
+    | "box"
+    | "inventory"
+    | "users"
+    | "chart"
+    | "message";
+}) {
+  const common = {
+    viewBox: "0 0 24 24",
+    className: "h-5 w-5",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+  };
+
+  if (type === "box") {
+    return (
+      <svg {...common}>
+        <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" />
+        <path d="M4 7.5 12 12l8-4.5" />
+        <path d="M12 12v9" />
+      </svg>
+    );
+  }
+
+  if (type === "inventory") {
+    return (
+      <svg {...common}>
+        <path d="M4 7h16" />
+        <path d="M6 7V4h12v3" />
+        <rect x="4" y="7" width="16" height="13" rx="2" />
+        <path d="M9 12h6" />
+      </svg>
+    );
+  }
+
+  if (type === "users") {
+    return (
+      <svg {...common}>
+        <circle cx="9" cy="8" r="3" />
+        <path d="M3.5 20a5.5 5.5 0 0 1 11 0" />
+        <path d="M15 5.5a3 3 0 0 1 0 5.8" />
+        <path d="M16 14.5a5 5 0 0 1 4.5 5.5" />
+      </svg>
+    );
+  }
+
+  if (type === "chart") {
+    return (
+      <svg {...common}>
+        <path d="M4 19V5" />
+        <path d="M4 19h16" />
+        <path d="m7 15 3-4 3 2 5-6" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...common}>
+      <path d="M5 5h14v11H8l-3 3V5Z" />
+      <path d="M8 9h8" />
+      <path d="M8 12h5" />
+    </svg>
   );
 }
